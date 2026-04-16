@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { api } from "@/lib/api";
 import type { Competitor } from "@/lib/api";
+import { useToast } from "@/components/ui/Toast";
 
 interface Props {
   open: boolean;
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function AddCompetitorModal({ open, onClose, onCreated }: Props) {
+  const { toast } = useToast();
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
   const [context, setContext] = useState("");
@@ -30,6 +32,7 @@ export default function AddCompetitorModal({ open, onClose, onCreated }: Props) 
       setUrl("");
       setContext("");
       onClose();
+      toast(`${competitor.name} added successfully`, "success");
     } catch {
       setError("Failed to add competitor. Check the URL and try again.");
     } finally {

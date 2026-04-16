@@ -8,9 +8,12 @@ import { api } from "@/lib/api";
 import type { Competitor, Change } from "@/lib/api";
 import CompetitorCard from "@/components/competitors/CompetitorCard";
 import AddCompetitorModal from "@/components/competitors/AddCompetitorModal";
+import { CompetitorCardSkeleton, StatCardSkeleton } from "@/components/ui/Skeleton";
+import { useToast } from "@/components/ui/Toast";
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
   const [recentChanges, setRecentChanges] = useState<Change[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,9 +41,11 @@ export default function DashboardPage() {
 
   const handleScrape = async (id: number) => {
     setScrapingIds((prev) => new Set(prev).add(id));
+    toast("Scan started — this may take a few seconds", "info");
     try {
       await api.scrapeCompetitor(id);
     } catch (err) {
+      toast("Scan failed. Please try again.", "error");
       console.error("Scrape failed:", err);
     } finally {
       setTimeout(() => {
@@ -50,6 +55,7 @@ export default function DashboardPage() {
           return next;
         });
         loadData();
+        toast("Scan complete!", "success");
       }, 5000);
     }
   };
@@ -83,8 +89,19 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+      <div>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <div className="mb-2 h-7 w-36 animate-pulse rounded-lg bg-border/50" />
+            <div className="h-4 w-64 animate-pulse rounded-lg bg-border/50" />
+          </div>
+        </div>
+        <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {Array.from({ length: 4 }, (_, i) => <StatCardSkeleton key={i} />)}
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }, (_, i) => <CompetitorCardSkeleton key={i} />)}
+        </div>
       </div>
     );
   }
@@ -109,7 +126,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats */}
-      <div className="mb-8 grid grid-cols-4 gap-4">
+      <div className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         {stats.map((stat, i) => (
           <motion.div
             key={stat.label}
