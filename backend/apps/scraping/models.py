@@ -7,7 +7,7 @@ class Snapshot(models.Model):
         on_delete=models.CASCADE,
         related_name="snapshots",
     )
-    screenshot = models.ImageField(upload_to="screenshots/%Y/%m/%d/")
+    screenshot = models.ImageField(upload_to="screenshots/%Y/%m/%d/", blank=True)
     html_content = models.TextField(blank=True)
     page_title = models.CharField(max_length=500, blank=True)
     status_code = models.IntegerField(null=True)

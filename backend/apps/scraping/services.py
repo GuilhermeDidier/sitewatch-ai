@@ -1,77 +1,51 @@
-import base64
 import difflib
 import hashlib
 import logging
-import os
-from io import BytesIO
-from pathlib import Path
 
+import requests
 from bs4 import BeautifulSoup
-from django.conf import settings
 from django.core.files.base import ContentFile
-from playwright.sync_api import sync_playwright
-
-os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", "/opt/render/project/.playwright")
 
 logger = logging.getLogger(__name__)
 
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36"
+    ),
+}
+
 
 class ScrapingService:
-    """Captures screenshots and HTML from competitor websites."""
+    """Captures HTML from competitor websites."""
 
     def capture(self, competitor):
-        """
-        Visit competitor URL, take screenshot, extract HTML.
-        Returns the created Snapshot instance.
-        """
         from .models import Snapshot
 
-        with sync_playwright() as p:
-            browser = p.chromium.launch(
-                headless=True,
-                args=["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"],
+        try:
+            resp = requests.get(
+                competitor.url,
+                headers=HEADERS,
+                timeout=30,
+                allow_redirects=True,
             )
-            page = browser.new_page(viewport={"width": 1280, "height": 720})
+            status_code = resp.status_code
+            html_raw = resp.text
+        except Exception as e:
+            logger.error(f"Failed to fetch {competitor.url}: {e}")
+            raise
 
-            try:
-                response = page.goto(
-                    competitor.url,
-                    wait_until="networkidle",
-                    timeout=30000,
-                )
-                status_code = response.status if response else None
+        soup = BeautifulSoup(html_raw, "html.parser")
+        page_title = soup.title.string.strip() if soup.title and soup.title.string else ""
+        clean_html = self._clean_html(html_raw)
 
-                # Wait for page to settle
-                page.wait_for_timeout(2000)
-
-                # Take full-page screenshot
-                screenshot_bytes = page.screenshot(full_page=True)
-
-                # Extract page title and clean HTML
-                page_title = page.title()
-                html_content = page.content()
-
-            except Exception as e:
-                logger.error(f"Failed to scrape {competitor.url}: {e}")
-                browser.close()
-                raise
-
-            browser.close()
-
-        # Clean HTML for comparison (remove scripts, styles, etc.)
-        clean_html = self._clean_html(html_content)
-
-        # Save snapshot
         snapshot = Snapshot(
             competitor=competitor,
             html_content=clean_html,
             page_title=page_title,
             status_code=status_code,
         )
-
-        # Save screenshot as image file
-        filename = f"{competitor.id}_{hashlib.md5(screenshot_bytes[:1024]).hexdigest()[:8]}.png"
-        snapshot.screenshot.save(filename, ContentFile(screenshot_bytes), save=False)
         snapshot.save()
 
         logger.info(f"Captured snapshot for {competitor.name}: {snapshot.id}")
@@ -81,7 +55,7 @@ class ScrapingService:
         """Strip scripts, styles, and normalize HTML for diffing."""
         soup = BeautifulSoup(html, "html.parser")
 
-        for tag in soup(["script", "style", "noscript", "iframe"]):
+        for tag in soup(["script", "style", "noscript", "iframe", "svg"]):
             tag.decompose()
 
         return soup.get_text(separator="\n", strip=True)
@@ -91,10 +65,6 @@ class DiffService:
     """Detects meaningful changes between two snapshots."""
 
     def compare(self, old_snapshot, new_snapshot):
-        """
-        Compare two snapshots and return change data if significant.
-        Returns dict with diff info, or None if no meaningful changes.
-        """
         old_lines = old_snapshot.html_content.splitlines()
         new_lines = new_snapshot.html_content.splitlines()
 
@@ -110,7 +80,6 @@ class DiffService:
         added = [l[1:] for l in diff if l.startswith("+") and not l.startswith("+++")]
         removed = [l[1:] for l in diff if l.startswith("-") and not l.startswith("---")]
 
-        # Filter out trivial changes (timestamps, session IDs, etc.)
         meaningful_added = [l for l in added if len(l.strip()) > 10]
         meaningful_removed = [l for l in removed if len(l.strip()) > 10]
 
@@ -118,7 +87,7 @@ class DiffService:
             return None
 
         return {
-            "added": meaningful_added[:50],  # Cap to avoid huge payloads
+            "added": meaningful_added[:50],
             "removed": meaningful_removed[:50],
             "added_count": len(meaningful_added),
             "removed_count": len(meaningful_removed),
