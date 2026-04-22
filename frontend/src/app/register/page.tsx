@@ -31,8 +31,14 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await register(email, password);
-    } catch {
-      setError("Registration failed. Email may already be in use.");
+    } catch (err: unknown) {
+      if (err && typeof err === "object" && "data" in err) {
+        const data = (err as { data: Record<string, unknown> }).data;
+        const messages = Object.values(data).flat().join(" ");
+        setError(messages || "Registration failed.");
+      } else {
+        setError("Registration failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
