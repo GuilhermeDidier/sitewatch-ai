@@ -34,8 +34,17 @@ class ScrapeCompetitorView(APIView):
 
         from apps.scraping.tasks import scrape_competitor
 
-        scrape_competitor.delay(competitor.id)
-        return Response(
-            {"message": f"Scraping started for {competitor.name}"},
-            status=status.HTTP_202_ACCEPTED,
-        )
+        try:
+            result = scrape_competitor.delay(competitor.id)
+            # With CELERY_TASK_ALWAYS_EAGER, check if the task failed
+            if hasattr(result, 'result') and isinstance(result.result, Exception):
+                raise result.result
+            return Response(
+                {"message": f"Scraping completed for {competitor.name}"},
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                {"error": f"Scraping failed: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

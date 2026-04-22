@@ -24,7 +24,10 @@ class ScrapingService:
         from .models import Snapshot
 
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
+            browser = p.chromium.launch(
+                headless=True,
+                args=["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"],
+            )
             page = browser.new_page(viewport={"width": 1280, "height": 720})
 
             try:
