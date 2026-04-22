@@ -2,6 +2,7 @@ import base64
 import difflib
 import hashlib
 import logging
+import os
 from io import BytesIO
 from pathlib import Path
 
@@ -9,6 +10,8 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.files.base import ContentFile
 from playwright.sync_api import sync_playwright
+
+os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", "/opt/render/project/.playwright")
 
 logger = logging.getLogger(__name__)
 
