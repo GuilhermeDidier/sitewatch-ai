@@ -225,7 +225,12 @@ class Command(BaseCommand):
 
         self.stdout.write(f"Seeding data for user: {user.email}")
 
-        # Clear existing demo data
+        # Skip if demo data already exists
+        if Change.objects.filter(competitor__user=user).exists():
+            self.stdout.write(self.style.WARNING("Demo data already exists. Skipping."))
+            return
+
+        # Clear existing competitors (no changes = no demo data yet)
         Competitor.objects.filter(user=user).delete()
 
         now = timezone.now()
