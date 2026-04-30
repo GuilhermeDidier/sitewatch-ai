@@ -44,19 +44,17 @@ export default function DashboardPage() {
     toast("Scan started — this may take a few seconds", "info");
     try {
       await api.scrapeCompetitor(id);
+      toast("Scan complete!", "success");
     } catch (err) {
       toast("Scan failed. Please try again.", "error");
       console.error("Scrape failed:", err);
     } finally {
-      setTimeout(() => {
-        setScrapingIds((prev) => {
-          const next = new Set(prev);
-          next.delete(id);
-          return next;
-        });
-        loadData();
-        toast("Scan complete!", "success");
-      }, 5000);
+      setScrapingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      loadData();
     }
   };
 
