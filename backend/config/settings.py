@@ -61,11 +61,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
+# DATABASE_ENGINE=sqlite wins over a DATABASE_URL still set on the host. The
+# demo runs on SQLite because Render deletes free Postgres databases after 30
+# days: this one was deleted, and every request that touched the database
+# answered 500 while the service still looked healthy.
+_SQLITE_URL = f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
 DATABASES = {
     "default": dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        default=_SQLITE_URL,
         conn_max_age=600,
     )
+    if config("DATABASE_ENGINE", default="").lower() != "sqlite"
+    else dj_database_url.parse(_SQLITE_URL)
 }
 
 AUTH_PASSWORD_VALIDATORS = [
