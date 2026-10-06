@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Plus, Globe, Activity, Lightbulb, Scan } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import type { Competitor, Change } from "@/lib/api";
 import CompetitorCard from "@/components/competitors/CompetitorCard";
 import AddCompetitorModal from "@/components/competitors/AddCompetitorModal";
@@ -46,7 +46,7 @@ export default function DashboardPage() {
       await api.scrapeCompetitor(id);
       toast("Scan complete!", "success");
     } catch (err) {
-      toast("Scan failed. Please try again.", "error");
+      toast(errorMessage(err, "Scan failed. Please try again."), "error");
       console.error("Scrape failed:", err);
     } finally {
       setScrapingIds((prev) => {

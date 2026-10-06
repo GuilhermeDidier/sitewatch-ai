@@ -165,6 +165,14 @@ export class ApiError extends Error {
   }
 }
 
+/** The server's own explanation when it refuses (e.g. the read-only demo), else the fallback. */
+export function errorMessage(err: unknown, fallback: string): string {
+  if (err instanceof ApiError && err.status === 403 && typeof err.data.detail === "string") {
+    return err.data.detail;
+  }
+  return fallback;
+}
+
 // Types
 export interface PaginatedResponse<T> {
   count: number;

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import type { Competitor } from "@/lib/api";
 import CompetitorCard from "@/components/competitors/CompetitorCard";
 import AddCompetitorModal from "@/components/competitors/AddCompetitorModal";
@@ -26,6 +26,8 @@ export default function CompetitorsPage() {
     setScrapingIds((prev) => new Set(prev).add(id));
     try {
       await api.scrapeCompetitor(id);
+    } catch (err) {
+      alert(errorMessage(err, "Scan failed. Please try again."));
     } finally {
       setTimeout(() => {
         setScrapingIds((prev) => {

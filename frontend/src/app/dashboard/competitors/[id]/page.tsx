@@ -10,7 +10,7 @@ import {
   Trash2,
   ExternalLink,
 } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import type { Competitor, Change, Snapshot } from "@/lib/api";
 import InsightCard from "@/components/intelligence/InsightCard";
 
@@ -57,15 +57,20 @@ export default function CompetitorDetailPage() {
         setScraping(false);
         loadData();
       }, 5000);
-    } catch {
+    } catch (err) {
       setScraping(false);
+      alert(errorMessage(err, "Scan failed. Please try again."));
     }
   };
 
   const handleDelete = async () => {
     if (!confirm("Delete this competitor and all its data?")) return;
-    await api.deleteCompetitor(id);
-    router.push("/dashboard");
+    try {
+      await api.deleteCompetitor(id);
+      router.push("/dashboard");
+    } catch (err) {
+      alert(errorMessage(err, "Could not delete this competitor."));
+    }
   };
 
   if (loading) {

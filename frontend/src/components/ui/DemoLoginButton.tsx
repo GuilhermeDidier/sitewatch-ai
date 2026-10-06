@@ -2,11 +2,9 @@
 
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
+import { ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-
-// Public demo account, seeded on every backend start (see seed_demo).
-const DEMO_EMAIL = "demo@sitewatch.ai";
-const DEMO_PASSWORD = "demo1234";
+import { DEMO_EMAIL, DEMO_PASSWORD } from "@/lib/demo";
 
 export function DemoLoginButton({ className }: { className?: string }) {
   const { login } = useAuth();
@@ -18,8 +16,12 @@ export function DemoLoginButton({ className }: { className?: string }) {
     setLoading(true);
     try {
       await login(DEMO_EMAIL, DEMO_PASSWORD);
-    } catch {
-      setError("The demo server did not answer. Try again in a moment.");
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? `The demo account could not sign in (error ${err.status}). Try again later.`
+          : "The demo server did not answer. Try again in a moment.",
+      );
       setLoading(false);
     }
   };

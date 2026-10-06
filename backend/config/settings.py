@@ -100,6 +100,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Auth
 AUTH_USER_MODEL = "accounts.User"
 
+# Public demo login: the frontend's "Try the live demo" button signs in with
+# these, so the account is read-only (see accounts.permissions).
+DEMO_USER_EMAIL = "demo@sitewatch.ai"
+DEMO_USER_PASSWORD = "demo1234"
+
 # DRF
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -107,6 +112,7 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
+        "apps.accounts.permissions.DemoAccountReadOnly",
     ),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,

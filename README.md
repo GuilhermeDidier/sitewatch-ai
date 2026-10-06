@@ -2,7 +2,7 @@
 
 Autonomous competitive intelligence agent that monitors competitor websites, detects changes, and delivers strategic insights powered by Claude AI.
 
-**Live demo:** [sitewatch-ai.vercel.app](https://sitewatch-ai.vercel.app) — click **Try the live demo** to enter a seeded account (3 competitors, 6 detected changes, AI insights). The backend runs on a free instance that sleeps when idle, so the first sign-in can take up to a minute.
+**Live demo:** [sitewatch-ai.vercel.app](https://sitewatch-ai.vercel.app) — click **Try the live demo** to enter a read-only account seeded with fictional competitors (3 competitors, 6 changes with sample AI analysis; scans and edits are turned off there). The backend runs on a free instance that sleeps when idle, so the first sign-in can take up to a minute.
 
 ![Sitewatch AI dashboard](docs/screenshot-dashboard.png)
 
@@ -35,7 +35,7 @@ Frontend (Next.js)  ──>  REST API (Django + DRF)  ──>  Celery Tasks
 
 **AI:** Anthropic Claude API — analyzes HTML diffs and generates strategic intelligence with actionable recommendations
 
-**Infrastructure:** Vercel (frontend) + Render (backend). The public demo keeps its data in SQLite inside the instance and re-seeds it on every start, and runs Celery tasks eagerly (in-process), so no worker or scheduler is running there. With `DATABASE_URL` and a Redis broker it runs on PostgreSQL with Celery workers and Beat.
+**Infrastructure:** Vercel (frontend) + Render (backend). The public demo keeps its data in SQLite inside the instance and re-seeds it on every start, and runs Celery tasks eagerly (in-process), so no worker or scheduler is running there. To run on PostgreSQL, set `DATABASE_URL` **and** `DATABASE_ENGINE=postgres` (`backend/gunicorn.conf.py` defaults the engine to SQLite, and SQLite wins over `DATABASE_URL`); set `CELERY_TASK_ALWAYS_EAGER=False` and `REDIS_URL` to run Celery workers and Beat.
 
 ## Key features
 

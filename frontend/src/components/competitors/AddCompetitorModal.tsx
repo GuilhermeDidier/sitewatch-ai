@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import type { Competitor } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
 
@@ -33,8 +33,8 @@ export default function AddCompetitorModal({ open, onClose, onCreated }: Props) 
       setContext("");
       onClose();
       toast(`${competitor.name} added successfully`, "success");
-    } catch {
-      setError("Failed to add competitor. Check the URL and try again.");
+    } catch (err) {
+      setError(errorMessage(err, "Failed to add competitor. Check the URL and try again."));
     } finally {
       setLoading(false);
     }
