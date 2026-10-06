@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Radar } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { DemoLoginButton } from "@/components/ui/DemoLoginButton";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -114,6 +115,14 @@ export default function LoginPage() {
             {loading ? "Signing in..." : "Sign in"}
           </button>
         </form>
+
+        <div className="my-6 flex items-center gap-3 text-xs text-text-muted">
+          <span className="h-px flex-1 bg-border" />
+          or
+          <span className="h-px flex-1 bg-border" />
+        </div>
+
+        <DemoLoginButton className="flex w-full items-center justify-center gap-2 rounded-lg border border-border py-2.5 font-medium text-text-primary transition-colors hover:bg-bg-hover disabled:opacity-70" />
 
         <p className="mt-6 text-center text-sm text-text-secondary">
           Don&apos;t have an account?{" "}

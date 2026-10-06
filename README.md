@@ -2,7 +2,9 @@
 
 Autonomous competitive intelligence agent that monitors competitor websites, detects changes, and delivers strategic insights powered by Claude AI.
 
-**Live demo:** [sitewatch-ai.vercel.app](https://sitewatch-ai.vercel.app)
+**Live demo:** [sitewatch-ai.vercel.app](https://sitewatch-ai.vercel.app) — click **Try the live demo** to enter a seeded account (3 competitors, 6 detected changes, AI insights). The backend runs on a free instance that sleeps when idle, so the first sign-in can take up to a minute.
+
+![Sitewatch AI dashboard](docs/screenshot-dashboard.png)
 
 ## What it does
 
@@ -22,7 +24,7 @@ Frontend (Next.js)  ──>  REST API (Django + DRF)  ──>  Celery Tasks
      |                          |                          |
   Vercel                   Render                    scrape + diff
                                |                          |
-                          PostgreSQL              Claude AI Analysis
+                     PostgreSQL / SQLite          Claude AI Analysis
                                |                          |
                             Redis                   Insights DB
 ```
@@ -33,7 +35,7 @@ Frontend (Next.js)  ──>  REST API (Django + DRF)  ──>  Celery Tasks
 
 **AI:** Anthropic Claude API — analyzes HTML diffs and generates strategic intelligence with actionable recommendations
 
-**Infrastructure:** Vercel (frontend) + Render (backend, PostgreSQL, Redis)
+**Infrastructure:** Vercel (frontend) + Render (backend). The public demo keeps its data in SQLite inside the instance and re-seeds it on every start, and runs Celery tasks eagerly (in-process), so no worker or scheduler is running there. With `DATABASE_URL` and a Redis broker it runs on PostgreSQL with Celery workers and Beat.
 
 ## Key features
 
@@ -52,7 +54,7 @@ Frontend (Next.js)  ──>  REST API (Django + DRF)  ──>  Celery Tasks
 |-------|-----------|
 | Frontend | Next.js 16, TypeScript, Tailwind CSS v4, Framer Motion |
 | Backend | Django 5.1, Django REST Framework, Celery |
-| Database | PostgreSQL (Render), SQLite (local dev) |
+| Database | PostgreSQL, or SQLite (local dev and the public demo) |
 | Queue | Redis / Valkey |
 | AI | Anthropic Claude API |
 | Auth | JWT (djangorestframework-simplejwt) |

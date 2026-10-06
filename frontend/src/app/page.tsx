@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Radar, ArrowRight, Eye, Zap, Brain } from "lucide-react";
+import { Radar, Eye, Zap, Brain } from "lucide-react";
+import { DemoLoginButton } from "@/components/ui/DemoLoginButton";
 
 const features = [
   {
@@ -95,19 +96,13 @@ export default function HomePage() {
             An autonomous AI agent that monitors competitor websites, detects
             changes, and delivers strategic insights — while you sleep.
           </p>
-          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:items-start sm:gap-4">
+            <DemoLoginButton className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 font-medium text-white shadow-[0_0_20px_rgba(99,102,241,0.3)] transition-all hover:bg-accent-hover hover:shadow-[0_0_30px_rgba(99,102,241,0.4)] disabled:opacity-70 sm:w-auto" />
             <Link
               href="/register"
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 font-medium text-white shadow-[0_0_20px_rgba(99,102,241,0.3)] transition-all hover:bg-accent-hover hover:shadow-[0_0_30px_rgba(99,102,241,0.4)] sm:w-auto"
-            >
-              Start monitoring
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/login"
               className="w-full rounded-lg border border-border px-6 py-3 font-medium text-text-secondary transition-colors hover:bg-bg-hover hover:text-text-primary sm:w-auto"
             >
-              Sign in
+              Start monitoring
             </Link>
           </div>
         </motion.div>
