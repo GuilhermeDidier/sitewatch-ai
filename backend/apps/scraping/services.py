@@ -6,6 +6,8 @@ import requests
 from bs4 import BeautifulSoup
 from django.core.files.base import ContentFile
 
+from .urlsafety import UnsafeURL, ensure_public_url
+
 logger = logging.getLogger(__name__)
 
 HEADERS = {
@@ -16,6 +18,29 @@ HEADERS = {
     ),
 }
 
+MAX_REDIRECTS = 5
+MAX_BYTES = 2 * 1024 * 1024
+
+
+def fetch_public(url):
+    """GET a public page, checking every redirect hop and capping the body size."""
+    for _ in range(MAX_REDIRECTS + 1):
+        ensure_public_url(url)
+        resp = requests.get(url, headers=HEADERS, timeout=30, allow_redirects=False, stream=True)
+        if resp.is_redirect:
+            url = requests.compat.urljoin(url, resp.headers["location"])
+            resp.close()
+            continue
+        body = b""
+        for chunk in resp.iter_content(64 * 1024):
+            body += chunk
+            if len(body) > MAX_BYTES:
+                resp.close()
+                raise UnsafeURL("The page is larger than 2 MB.")
+        resp._content = body
+        return resp
+    raise UnsafeURL("Too many redirects.")
+
 
 class ScrapingService:
     """Captures HTML from competitor websites."""
@@ -24,12 +49,7 @@ class ScrapingService:
         from .models import Snapshot
 
         try:
-            resp = requests.get(
-                competitor.url,
-                headers=HEADERS,
-                timeout=30,
-                allow_redirects=True,
-            )
+            resp = fetch_public(competitor.url)
             status_code = resp.status_code
             html_raw = resp.text
         except Exception as e:

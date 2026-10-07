@@ -27,17 +27,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
-    if (token) {
-      api
-        .getMe()
-        .then(setUser)
-        .catch(() => {
-          api.clearTokens();
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+    const session = token
+      ? api
+          .getMe()
+          .then(setUser)
+          .catch(() => {
+            api.clearTokens();
+          })
+      : Promise.resolve();
+    session.finally(() => setLoading(false));
   }, []);
 
   const login = async (email: string, password: string) => {

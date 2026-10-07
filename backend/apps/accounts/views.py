@@ -24,6 +24,8 @@ class UserSerializer(serializers.ModelSerializer):
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = (permissions.AllowAny,)
+    # Sign-up is public, and every new account gets its own scan allowance.
+    throttle_scope = "register"
 
 
 class MeView(generics.RetrieveAPIView):

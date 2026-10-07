@@ -1,4 +1,7 @@
+from django.conf import settings
 from rest_framework import serializers
+
+from apps.scraping.urlsafety import UnsafeURL, ensure_public_url
 
 from .models import Competitor
 
@@ -21,3 +24,18 @@ class CompetitorSerializer(serializers.ModelSerializer):
             "updated_at",
         )
         read_only_fields = ("id", "created_at", "updated_at")
+
+    def validate_url(self, value):
+        try:
+            ensure_public_url(value)
+        except UnsafeURL as e:
+            raise serializers.ValidationError(str(e))
+        return value
+
+    def validate(self, attrs):
+        user = self.context["request"].user
+        if self.instance is None and user.competitors.count() >= settings.MAX_COMPETITORS_PER_USER:
+            raise serializers.ValidationError(
+                f"An account can monitor up to {settings.MAX_COMPETITORS_PER_USER} competitors."
+            )
+        return attrs

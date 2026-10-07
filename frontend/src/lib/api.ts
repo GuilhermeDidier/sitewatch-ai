@@ -165,10 +165,13 @@ export class ApiError extends Error {
   }
 }
 
-/** The server's own explanation when it refuses (e.g. the read-only demo), else the fallback. */
+/** The server's own explanation when it refuses (read-only demo, unsafe URL, rate limit), else the fallback. */
 export function errorMessage(err: unknown, fallback: string): string {
-  if (err instanceof ApiError && err.status === 403 && typeof err.data.detail === "string") {
-    return err.data.detail;
+  if (!(err instanceof ApiError) || ![400, 403, 429].includes(err.status)) return fallback;
+  if (typeof err.data.detail === "string") return err.data.detail;
+  // Validation errors come back as {field: [message, ...]}.
+  for (const value of Object.values(err.data)) {
+    if (Array.isArray(value) && typeof value[0] === "string") return value[0];
   }
   return fallback;
 }
